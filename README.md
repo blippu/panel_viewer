@@ -1,4 +1,4 @@
-# Comic Viewer
+# Panel Viewer
 
 Comic Viewer is a Python-based desktop application for viewing comic book archives (`.cbz` / `.zip`) with support for panel detection, full-page view, and fit-width scrolling. It uses **PyQt6** for the GUI and **OpenCV** for image processing.
 
