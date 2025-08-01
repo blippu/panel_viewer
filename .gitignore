@@ -1,0 +1,13 @@
+venv
+assets
+models_compressed
+extracted_images
+bd12.dist
+bd12.onefile-build
+bd12.build
+bd14.dist
+bd14.onefile-build
+bd14.build
+bd15.dist
+bd15.onefile-build
+bd15.build
