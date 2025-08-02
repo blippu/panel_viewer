@@ -17,8 +17,13 @@ Panel Viewer is a Python-based desktop application for viewing comic book archiv
 
 ## Installation
 
-### With VSCode
+### Manual Setup
+git clone https://github.com/blippu/panel_viewer.git
+cd panel_viewer
+pip install -r requirements.txt
+python main.py
 
+### With VSCode
 1. Open the project folder in **Visual Studio Code**.
 2. Press `Ctrl + Shift + P` to open the **Command Palette**.
 3. Type and select `Python: Create Environment`.
@@ -27,18 +32,3 @@ Panel Viewer is a Python-based desktop application for viewing comic book archiv
 6. VSCode will automatically create a virtual environment and install dependencies from `requirements.txt` if available.
 
 ---
-
-### Manual Setup (Optional)
-
-```bash
-# Create virtual environment
-python -m venv venv
-
-# Activate it
-# On Windows:
-venv\\Scripts\\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
