@@ -4,13 +4,14 @@ import zipfile
 import cv2
 import numpy as np
 import pygame
-from PyQt6.QtGui import (QGuiApplication, QAction)
+from PyQt6.QtGui import (QGuiApplication, QAction,QWheelEvent)
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow,QFileDialog,QLabel,QHBoxLayout,QVBoxLayout,    QWidget, QPushButton )
 from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt,QPointF, QPoint
 import shutil
 import json
+
 
 class ComicViewer(QMainWindow):
     def __init__(self):
@@ -18,9 +19,9 @@ class ComicViewer(QMainWindow):
 
         self.setWindowTitle("Comic Viewer")
         pygame.init()
-
+        self.SESSION_FILE = "last_session.json"
         self.scroll_position = 0
-        self.version= "v 0.19"
+        self.version= "v 0.20"
         self.filename = ""
         self.page_number = 0
         self.panel_number = ""
@@ -67,15 +68,53 @@ class ComicViewer(QMainWindow):
         self.create_menus()
         self.update_title()
 
-    def save_last_session(self):
-        SESSION_FILE = "last_session.json"
+    def save_last_session(self):        
+        if not hasattr(self, "full_file_path") or not self.full_file_path:
+            return  # Skip saving if no file is open
+
+        windows_path = self.full_file_path
         data = {
-            "filename": self.full_file_path,
+            "filename": windows_path,
             "page_number": self.page_number
         }
-        with open(SESSION_FILE, "w", encoding="utf-8") as f:
+        with open(self.SESSION_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
+    def load_last_session(self):
+
+        if os.path.exists(self.SESSION_FILE):
+            try:
+                with open(self.SESSION_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+
+                    self.full_file_path = data.get("filename", "")
+                    self.page_number = data.get("page_number", 1)
+                    self.filename = os.path.basename(self.full_file_path)
+                    print(self.full_file_path)
+                    print(self.filename)
+                    print(self.page_number)
+                    #self.filename = data.get("filename", "")
+                    #self.page_number = data.get("page_number", 1)
+
+                    # Show loading message
+                    self.label.setText("Loading comic book...")
+                    self.label.setStyleSheet("color: grey; background-color: black;")
+                    self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    QApplication.processEvents()  # Force UI to update immediately
+
+                    self.panel_surfaces, self.panel_info = self.extract_and_process_panels(self.full_file_path)
+                    self.update_title()
+                    #self.show_next_panel()
+                    self.simulate_scroll_down()
+
+
+            except Exception as e:
+                print(f"Failed to load session: {e}")
+                self.filename = ""
+                self.page_number = 1
+        else:
+            self.filename = ""
+            self.page_number = 0
 
     def create_menus(self):
         menubar = self.menuBar()
@@ -84,7 +123,9 @@ class ComicViewer(QMainWindow):
         open_action = QAction("Open File", self)
         open_action.triggered.connect(self.open_file)
         file_menu.addAction(open_action)
-
+        open_action = QAction("Continue reading from last Session", self)
+        open_action.triggered.connect(self.load_last_session)
+        file_menu.addAction(open_action)
         display_menu = menubar.addMenu("Display")
 
         self.display_filename_action = QAction("Display Filename", self, checkable=True, checked=True)
@@ -108,7 +149,8 @@ class ComicViewer(QMainWindow):
 
         # Set default state
         #self.reading_menu_panel_action.setChecked(True)
-        self.reading_menu_page_action.setChecked(True)
+        #self.reading_menu_page_action.setChecked(True)
+        self.reading_menu_fit_width_action.setChecked(True)
 
         # Define toggle behavior
         def toggle_to_panel():
@@ -153,7 +195,10 @@ class ComicViewer(QMainWindow):
             self.full_file_path = file_path
             self.page_number = 1
             self.panel_number = 1
-
+            print(self.full_file_path)
+            print(self.filename)
+            print(self.page_number)
+            
             # Show loading message
             self.label.setText("Loading comic book...")
             self.label.setStyleSheet("color: grey; background-color: black;")
@@ -474,6 +519,19 @@ class ComicViewer(QMainWindow):
             except Exception as e:
                 print(f"Error deleting temporary directory: {e}")
         event.accept()
+
+    def simulate_scroll_down(self, event=None):
+        wheel_event = QWheelEvent(
+            QPointF(0, 0),               # pos (QPointF)
+            QPointF(0, 0),               # globalPos (QPointF)
+            QPoint(0, 0),                # pixelDelta (QPoint)
+            QPoint(0, -120),             # angleDelta (QPoint) — negative for scroll down
+            Qt.MouseButton.NoButton,
+            Qt.KeyboardModifier.NoModifier,
+            Qt.ScrollPhase.ScrollUpdate,
+            False                        # inverted
+        )
+        QApplication.postEvent(self, wheel_event)
 
 
 if __name__ == "__main__":
