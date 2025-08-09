@@ -94,8 +94,6 @@ class ComicViewer(QMainWindow):
                     print(self.filename)
                     print(self.page_number)
                     self.panel_number = data.get("panel_number", 1)
-                    #self.filename = data.get("filename", "")
-                    #self.page_number = data.get("page_number", 1)
 
                     # Show loading message
                     self.label.setText("Loading comic book...")
