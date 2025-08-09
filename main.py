@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtCore import Qt
 import shutil
+import json
 
 class ComicViewer(QMainWindow):
     def __init__(self):
@@ -65,6 +66,16 @@ class ComicViewer(QMainWindow):
         self.menuBar().setStyleSheet("background-color: gray;")
         self.create_menus()
         self.update_title()
+
+    def save_last_session(self):
+        SESSION_FILE = "last_session.json"
+        data = {
+            "filename": self.full_file_path,
+            "page_number": self.page_number
+        }
+        with open(SESSION_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
 
     def create_menus(self):
         menubar = self.menuBar()
@@ -137,8 +148,9 @@ class ComicViewer(QMainWindow):
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Comic Book", filter="CBZ files (*.cbz);;ZIP files (*.zip)")
         if file_path:
+            self.full_file_path = file_path
             self.filename = os.path.basename(file_path)
-
+            self.full_file_path = file_path
             self.page_number = 1
             self.panel_number = 1
 
@@ -451,6 +463,9 @@ class ComicViewer(QMainWindow):
                 self.show_next_panel()
 
     def closeEvent(self, event):
+
+        self.save_last_session()
+
         extract_dir = 'extracted_images'
         if os.path.exists(extract_dir):
             try:
