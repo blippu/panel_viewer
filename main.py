@@ -413,6 +413,16 @@ class ComicViewer(QMainWindow):
                         self.scroll_position = min(max_scroll, self.scroll_position + scroll_step)
                     elif self.scroll_position >= max_scroll and self.page_number < len(self.image_files):
                         self.page_number += 1
+
+                        image_path = self.image_files[self.page_number - 1]
+                        image = cv2.imread(image_path)
+                        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                        height, width, _ = image_rgb.shape
+                        q_image = QImage(image_rgb.data, width, height, 3 * width, QImage.Format.Format_RGB888)
+                        pixmap = QPixmap.fromImage(q_image)
+                        scaled_pixmap = pixmap.scaledToWidth(self.label.width(), Qt.TransformationMode.SmoothTransformation)
+
+
                         self.scroll_position = 0
 
 
